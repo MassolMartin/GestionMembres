@@ -73,11 +73,16 @@ public class MembreController {
     public Membre paiementCotisation(@PathVariable("id") Membre m,@RequestBody String iban) {
         Optional<Membre> me = this.membreRepo.findById(m.getId());
         if(me.isPresent()) {
-            Membre mbre = me.get();
-            mbre.setIban(iban);
-            mbre.setCotisationValide(Boolean.FALSE);
-            logger.info("Cotisation payée avec succès !");
-            return this.membreRepo.save(mbre);
+            if(me.get().getIban() != null) {
+                Membre mbre = me.get();
+                mbre.setIban(iban);
+                mbre.setCotisationValide(Boolean.FALSE);
+                logger.info("Cotisation payée avec succès !");
+                return this.membreRepo.save(mbre);
+            } else {
+                logger.info("ERREUR : Ce membre ne s'est pas acquitté de sa cotisation");
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "ERREUR : Ce membre ne s'est pas acquitté de sa cotisation");
+            }
         } else {
             logger.info("ERREUR : Ce membre n'existe pas");
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Membre non trouvé");
@@ -211,4 +216,26 @@ public class MembreController {
             return me;
         }
     }
+    
+    /**
+     * POST Définie un numéro de license pour un membre
+     * @param m
+     * @param numLicence
+     * @return le membre
+     */
+    @PostMapping("/licence/{id}")
+    public Membre majLicence(@PathVariable("id") Membre m,@RequestParam("numeroLicence") String numLicence) {
+        Optional<Membre> me = this.membreRepo.findById(m.getId());
+        // Si un membre existe
+        if(me.isPresent()) {
+            Membre mbre = me.get();
+            mbre.setNumLicence(Long.parseLong(numLicence));
+            logger.info("Numéro de licence mis à jour avec succès !");
+            return this.membreRepo.save(mbre);
+        } else {
+            logger.info("ERREUR : Ce membre n'existe pas");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Membre non trouvé");
+        }
+    }
+    
 }

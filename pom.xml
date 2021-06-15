@@ -83,6 +83,7 @@
             </dependencies>
 	</dependencyManagement>
 	<build>
+            <finalName>gestionmembres</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.asciidoctor</groupId>
@@ -123,5 +124,4 @@
 			</plugin>
 		</plugins>
 	</build>
-
 </project>

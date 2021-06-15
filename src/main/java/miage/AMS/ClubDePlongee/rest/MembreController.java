@@ -73,15 +73,15 @@ public class MembreController {
     public Membre paiementCotisation(@PathVariable("id") Membre m,@RequestBody String iban) {
         Optional<Membre> me = this.membreRepo.findById(m.getId());
         if(me.isPresent()) {
-            if(me.get().getIban() != null) {
+            if(me.get().getIban() == null) {
                 Membre mbre = me.get();
                 mbre.setIban(iban);
                 mbre.setCotisationValide(Boolean.FALSE);
                 logger.info("Cotisation payée avec succès !");
                 return this.membreRepo.save(mbre);
             } else {
-                logger.info("ERREUR : Ce membre ne s'est pas acquitté de sa cotisation");
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "ERREUR : Ce membre ne s'est pas acquitté de sa cotisation");
+                logger.info("ERREUR : Ce membre s'est déjà acquitté de sa cotisation");
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "ERREUR : Ce membre s'est déjà acquitté de sa cotisation");
             }
         } else {
             logger.info("ERREUR : Ce membre n'existe pas");
@@ -101,13 +101,18 @@ public class MembreController {
         if(me.isPresent()) {
             Membre mbre = me.get();
             if(!mbre.getCotisationValide()) {
-                mbre.setCotisationValide(Boolean.TRUE);
-                mbre.setNumLicence(numLicence);
-                logger.info("Paiement de ce membre validé");
-                return this.membreRepo.save(mbre);
+                if(mbre.getIban() != null) {
+                    mbre.setCotisationValide(Boolean.TRUE);
+                    mbre.setNumLicence(numLicence);
+                    logger.info("Paiement de ce membre validé");
+                    return this.membreRepo.save(mbre);
+                } else {
+                    logger.info("ERREUR : Ce membre n'a pas payé sa cotisation");
+                    throw new ResponseStatusException(HttpStatus.CONFLICT, "Ce membre a déjà payé sa cotisation");
+                }
             } else {
-                logger.info("ERREUR : Ce membre a déjà payé sa cotisation");
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "Ce membre a déjà payé sa cotisation");
+                logger.info("ERREUR : La cotisation de ce membre est valide");
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "La cotisation de ce membre est valide");
             }
         } else {
             logger.info("ERREUR : Ce membre n'existe pas");

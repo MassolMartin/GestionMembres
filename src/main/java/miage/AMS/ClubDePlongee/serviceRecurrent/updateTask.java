@@ -13,11 +13,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
 
 /**
  * Service permettant d'automatiser les tâches de mise à jours des données des membres
  * @author Miage
  */
+@Service
 public class updateTask {
     
     @Autowired
@@ -28,9 +30,13 @@ public class updateTask {
     /**
      * Met à jour le statut de validité des paiements des membres chaque premier janvier
      */
-    @Scheduled(cron = "0 0 0 01 01 ?")
+    
+    // Pour les tests, toutes les 5 minutes
+    // Chaque premier janvier : 0 0 0 01 01 ?
+    @Scheduled(fixedRate = 420000, initialDelay = 420000)
     public void updateDureeValiditePaiement() {
         for (Membre m : this.membreRepo.findAll()) {
+            m.setIban(null);
             m.setCotisationValide(false);
             this.membreRepo.save(m);
         }
@@ -41,7 +47,9 @@ public class updateTask {
      * Met à jour les certificats médicaux des membres
      * Cette tâche s'exécute une fois par jour
      */
-    @Scheduled(cron = "0 1 1 * * ?")
+    // Pour les tests, toutes les 5 minutes
+    // Une fois par jour : 0 1 1 * * ?
+    @Scheduled(fixedRate = 420000, initialDelay = 420000)
     public void updateCertificatsMedicaux() {
         Date d = new Date();
         for (Membre m : this.membreRepo.findAll()) {
